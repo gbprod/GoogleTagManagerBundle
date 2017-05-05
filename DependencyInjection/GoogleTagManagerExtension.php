@@ -10,10 +10,11 @@
 
 namespace Xynnn\GoogleTagManagerBundle\DependencyInjection;
 
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
-use Symfony\Component\HttpKernel\DependencyInjection\Extension;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\DependencyInjection\Definition;
 use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
  * Class GoogleTagManagerExtension
@@ -33,9 +34,28 @@ class GoogleTagManagerExtension extends Extension
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.yml');
 
+        $this->createTagManagerDefinition($container);
+
         foreach ($config as $name => $node) {
             $container->setParameter($this->getAlias() . '.' . $name, $node);
         }
+    }
+
+    private function createTagManagerDefinition(ContainerBuilder $container)
+    {
+        $managerDefinition = new Definition('google_tag_manager');
+
+        // Symfony 2.3 backward compatibility
+        if (method_exists('Symfony\Component\DependencyInjection\Definition', 'setFactory')) {
+            $managerDefinition->setFactory(['@google_tag_manager.factory', 'create']);
+        } else {
+            $managerDefinition
+                ->setFactoryService('google_tag_manager.factory')
+                ->setFactoryMethod('create')
+            ;
+        }
+
+        $container->setDefinition('google_tag_manager', $managerDefinition);
     }
 
     /**
