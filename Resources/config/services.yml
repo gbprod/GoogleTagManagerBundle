@@ -1,7 +1,7 @@
 services:
     google_tag_manager:
-        class: Xynnn\GoogleTagManagerBundle\Service\GoogleTagManagerInterface
-        class:
+        class: Xynnn\GoogleTagManagerBundle\Service\GoogleTagManager
+        arguments:
             - "%google_tag_manager.enabled%"
             - "%google_tag_manager.id%"
 
